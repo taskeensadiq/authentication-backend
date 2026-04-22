@@ -1,5 +1,4 @@
-// src/products/products.controller.ts
-import { Controller, Get, Post, Body, Patch, Param, Delete, SetMetadata, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, SetMetadata, UseGuards, Query, DefaultValuePipe, ParseIntPipe } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { UserRole } from 'src/auth/entities/auth.entity';
 import { RolesGuard } from 'src/auth/guards/roles/roles.guard';
@@ -18,8 +17,17 @@ export class ProductsController {
   }
 
   @Get()
-  findAll(@Query('status') status: string) {
-    return this.productsService.findAll();
+  findAll(
+    @Query('status') status: string,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+  ) {
+    return this.productsService.findAll(status, page, limit);
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.productsService.findOne(id);
   }
 
   @UseGuards(RolesGuard)
@@ -28,14 +36,6 @@ export class ProductsController {
   update(@Param('id') id: string, @Body('name') name: string, @Body('description') description: string) {
     return this.productsService.update(id, name, description);
   }
-
-  // @Delete(':id')
-  // @UseGuards(RolesGuard)
-  // @SetMetadata('roles', [UserRole.ADMIN]) 
-  // remove(@Param('id') id: string) {
-  //   return this.productsService.remove(id);
-  // }
-
 
   @Delete(':id')
   @UseGuards(RolesGuard)

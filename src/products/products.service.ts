@@ -17,7 +17,7 @@ export class ProductsService {
   }
 
   // READ
-  async findAll(status?: string): Promise<Product[]> {
+  async findAll(status?: string, page: number = 1, limit: number = 10): Promise< { data: Product[], total: number, page: number, limit: number, totalPages: number }> {
     const query = this.productRepository.createQueryBuilder('product');
 
     if (status === 'active') {
@@ -26,7 +26,17 @@ export class ProductsService {
       query.where('product.isArchived = :isArchived', { isArchived: true });
     }
 
-    return await query.getMany();
+    query.orderBy('product.createdAt', 'DESC');
+
+    const [data, total] = await query.skip((page - 1) * limit).take(limit).getManyAndCount();
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages: limit > 0 ? Math.ceil(total / limit) : 0,
+    }
   }
 
   // UPDATE
@@ -59,6 +69,16 @@ export class ProductsService {
   async removePermanently(id: string) {
     const result = await this.productRepository.delete(id);
     if (result.affected === 0) throw new NotFoundException('Product not found');
-    return { deleted: true, id };
+    return { deleted: true};
   }
+
+  async findOne(id: string): Promise<Product> {
+  const product = await this.productRepository.findOneBy({ id });
+
+  if (!product) {
+    throw new NotFoundException('Product not found');
+  }
+
+  return product;
+}
 }
