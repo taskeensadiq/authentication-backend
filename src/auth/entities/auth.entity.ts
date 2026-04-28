@@ -20,7 +20,8 @@ export class Auth {
     @Column({
         type: 'enum',
         enum: UserRole,
-        default: UserRole.USER,
+        array: true,
+        default: [UserRole.USER],
     })
-    role!: UserRole;
+    role!: UserRole[];
 }

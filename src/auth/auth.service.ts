@@ -5,6 +5,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Auth, UserRole } from './entities/auth.entity';
 import * as bcrypt from 'bcrypt';
+import { ROLE_PERMISSIONS } from './permission/role-permissions';
+import { permission } from 'process';
 
 @Injectable()
 export class AuthService {
@@ -19,18 +21,18 @@ export class AuthService {
 
   async seedUser() {
     const adminEmail = 'demo@example.com';
-    
+
     const userExists = await this.authRepository.findOne({ where: { email: adminEmail } });
 
     if (!userExists) {
       console.log('Seeding default admin user...');
-      
+
       const hashedPassword = await bcrypt.hash('demo123', 10);
-      
+
       const newUser = this.authRepository.create({
         email: adminEmail,
         password: hashedPassword,
-        role: UserRole.ADMIN
+        role: [UserRole.ADMIN]
       });
 
       await this.authRepository.save(newUser);
@@ -42,36 +44,58 @@ export class AuthService {
 
   async login(userDto: any) {
     const user = await this.authRepository.findOne({ where: { email: userDto.email } });
-
+    
     if (user && await bcrypt.compare(userDto.password, user.password)) {
+      // const role = user.role;
+      // const permissions = [...new Set(role.flatMap(r => ROLE_PERMISSIONS[r] || []))];
       const payload = { email: user.email, sub: user.id, role: user.role };
       return {
         access_token: this.jwtService.sign(payload),
-        user: { email: user.email, role: user.role , id: user.id }
+        user: { email: user.email, role: user.role, id: user.id }
       };
     } else {
       throw new UnauthorizedException('Invalid credentials');
     }
   };
 
+  async updateRoles(userId: string, roles: UserRole[]) {
+    const user = await this.authRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    user.role = roles;
+    await this.authRepository.save(user);
+
+    const payload = { email: user.email, sub: user.id, role: user.role };
+    return {
+      access_token: this.jwtService.sign(payload),
+      user: { email: user.email, role: user.role, id: user.id },
+    };
+  }
+
   async register(registerDto: any) {
-    const existingUser = await this.authRepository.findOne({ where: { email: registerDto.email } });  
+    const existingUser = await this.authRepository.findOne({ where: { email: registerDto.email } });
     if (existingUser) {
       throw new UnauthorizedException('Email already in use');
-    } else {  
+    } else {
       console.log('1. Raw data from Frontend:', registerDto);
       const hashedPassword = await bcrypt.hash(registerDto.password, 10);
       const newUser = this.authRepository.create({
         email: registerDto.email,
         password: hashedPassword,
-        role: registerDto.role
+        // role: registerDto.role
+        role: Array.isArray(registerDto.role)
+          ? registerDto.role
+          : [registerDto.role || UserRole.USER],
       });
       console.log('2. New user entity before saving:', newUser);
       await this.authRepository.save(newUser);
       console.log('3. New user saved to DB:', newUser);
-      return { message: 'User registered successfully',
+      return {
+        message: 'User registered successfully',
         user: { email: newUser.email, role: newUser.role, id: newUser.id }
-       };
+      };
     }
   }
 }
