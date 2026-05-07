@@ -7,6 +7,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProductsController } from './products/products.controller';
 import { ProductsService } from './products/products.service';
 import { ProductsModule } from './products/products.module';
+import { RolesModule } from './roles/roles.module';
 
 @Module({
   imports: [ConfigModule.forRoot({ isGlobal: true }),
@@ -25,7 +26,8 @@ import { ProductsModule } from './products/products.module';
     }),
   }),
     AuthModule,
-    ProductsModule],
+    ProductsModule,
+    RolesModule],
   controllers: [AppController],
   providers: [AppService,],
 })

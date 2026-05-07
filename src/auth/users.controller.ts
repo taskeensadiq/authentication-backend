@@ -1,7 +1,7 @@
 import { Body, Controller, Patch, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
-import { UserRole } from './entities/auth.entity';
+import { User } from './entities/user.entity';
 
 @Controller('auth')
 export class UsersController {
@@ -9,7 +9,7 @@ export class UsersController {
 
   @UseGuards(AuthGuard('jwt'))
   @Patch('roles')
-  async updateRoles(@Req() req: any, @Body('roles') roles: UserRole[]) {
+  async updateRoles(@Req() req: any, @Body('roles') roles: any[]) {
     return this.authService.updateRoles(req.user.userId, roles);
   }
 }
