@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { Role } from '../auth/entities/role.entity';
@@ -26,6 +26,11 @@ export class RolesService {
 
   // CREATE ROLE
   async createRole(name: string, permissionIds?: string[]) {
+
+    if (name === 'SUPER_ADMIN') {
+    throw new ForbiddenException('Cannot create SUPER_ADMIN role');
+  }
+
     const role = this.roleRepository.create({ name });
 
     if (permissionIds && permissionIds.length > 0) {

@@ -8,6 +8,8 @@ import { ProductsController } from './products/products.controller';
 import { ProductsService } from './products/products.service';
 import { ProductsModule } from './products/products.module';
 import { RolesModule } from './roles/roles.module';
+import { UsersModule } from './users/users.module';
+import { SeedModule } from './seed/seed.module';
 
 @Module({
   imports: [ConfigModule.forRoot({ isGlobal: true }),
@@ -27,7 +29,9 @@ import { RolesModule } from './roles/roles.module';
   }),
     AuthModule,
     ProductsModule,
-    RolesModule],
+    RolesModule,
+    UsersModule,
+    SeedModule],
   controllers: [AppController],
   providers: [AppService,],
 })

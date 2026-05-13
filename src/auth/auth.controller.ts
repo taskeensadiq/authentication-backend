@@ -20,11 +20,11 @@ export class AuthController {
     return this.authService.register(registerDto);
   }
 
-  @Patch('roles')
-  @UseGuards(AuthGuard('jwt'))
-  async updateRoles(@Req() req: any, @Body('roles') roleIds: string[]) {
-    return this.authService.updateRoles(req.user.sub, roleIds);
-  }
+  // @Patch('roles')
+  // @UseGuards(AuthGuard('jwt'))
+  // async updateRoles(@Req() req: any, @Body('roles') roleIds: string[]) {
+  //   return this.authService.updateRoles(req.user.sub, roleIds);
+  // }
 
   @Get('whoami')
   @UseGuards(AuthGuard('jwt'))
